@@ -1,0 +1,19 @@
+#lang racket
+;##########################HW4_11619370216 _游忠敏##########################
+;==========================================================================
+;[5 points] 1.
+(define (diagonal sentences)
+  (define (then sentences)
+    (if (null? sentences)
+        '()
+        (cons (cdr (car sentences))
+              (then (cdr sentences)))))
+  (if (null? sentences)
+      '()
+      (cons (car (car sentences))
+            (diagonal (then (cdr sentences))))
+      ))
+;test
+;(diagonal '((she loves you)(tell me why)(I want to hold your hand)))
+;==========================================================================
+;[5 points] 2.

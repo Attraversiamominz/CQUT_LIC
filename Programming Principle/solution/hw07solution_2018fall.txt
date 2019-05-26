@@ -1,0 +1,217 @@
+=============================================
+Fall 2018,  CS220
+              Homework No. 7 Solutions 
+=============================================
+
+Exercise 1 :
+
+ (define x (stream-map show (stream-enumerate-interval 0 10)))
+
+; 0       ;not displayed by display-line in show
+
+; (stream-ref x 5)
+
+  55       ;; ==> the latter "5" is return value by stream-ref
+
+(stream-ref x 7)
+
+  77      ;; the latter 7 ==> return value by stream-ref
+
+--------------------------------------------------
+
+Exercise 2:
+
+Stream A = (1 2 4 8 16 ....)  An=2**(n-1)  ; exponential
+
+Stream B = (1 1 2 6 24 120 720 ...)  An= (n-1)! ; factorial
+
+---------------------------------------------------------
+
+Exercise 3:
+
+(a) (stream-pairs s) ==> ((1 2) .#<promise>)
+        ==> ((1 2) (1 3) (1 4) (1 5) (2 3) (2 4) (2 5) (3 4) (3 5) (4 5))
+
+(b) stream-pairs will generate the stream of all pairs(lists) of elements from s:
+   The first argument of stream-append is the stream of the pairs(lists) with the first
+    element of s and the rest of the elements. The second arguement of the stream-append
+   is the stream of all pairs(lists) of (rest s) which is the stream of all pairs without
+   the first element of s. 
+
+(c) The stream must be ((1 2) (1 3) (1 4) ......(2 3) (2 4)...........). But....
+    Unfortunately, the evaluation of stream-pairs never ends: the stream-append of 
+    (stream-pairs integers) will call (stream-append ...) which will in turn call the
+    (stream-pairs (stream-rest integers)) which will call the stream-append ...... and so on.
+    There is no cons-stream involved in this calling sequence, so it never stops.
+
+    There are several ways to fix it. The key idea is to "delay" the evaluation of
+    "stream-pairs" which is the second argument of stream-append. One solution is to modify
+    stream-append to accept the "delayed argument" as its second argument. Then, make
+    the second argument of stream-append be "delayed stream-pairs".
+
+    (define (stream-append s1 delayed-s2)
+       (if (stream-empty? s1)
+           (force delayed-s2)
+           (stream-cons (stream-first s1)
+                        (stream-append (stream-rest s1) delayed-s2))))
+
+   (define (stream-pairs s)
+        (if (stream-empty? s)
+            empty-stream
+            (stream-append
+              (stream-map
+                    (lambda (sn) (list (stream-first s) sn))
+                    (stream-rest s))
+              (delay (stream-pairs (stream-rest s))))))
+
+
+This is not "the only" solution.
+
+------------------------------------------------------------------------------------
+
+Problem 1:
+
+Be careful to use the provided constructors, rather than using stream operators!
+
+(define (inc x) (+ x 1))
+(define s1 (proc->series (lambda(x) 1)))
+(define s2 (proc->series (lambda(x) (inc x))))
+
+------------------------------------------------------------------------------------
+
+Problem 2:
+
+(define (mul-series s1 s2)
+  (stream-cons (* (stream-first s1)
+                  (stream-first s2))
+               (add-series (scale-series (stream-first s1) (stream-rest s2))
+                           (mul-series (stream-rest s1) s2))))
+
+
+  
+
+Here we check if s1*s1=s2: 
+
+(define s3 (mul-series s1 s1))
+;Value: "s3 --> (1 . #[promise 27])"
+
+(show-series (subtract-series s3 s2) 6)
+0
+0
+0
+0
+0
+0
+
+What is the coefficient of x^10 in s2*s2? 
+
+(series-coeff (mul-series s2 s2) 10)
+;Value: 286
+
+-----------------------------------------------------------------------------------
+
+Problem 3:
+
+(define (invert-unit-series s)
+  (stream-cons 1 (negate-series (mul-series (stream-rest s) 
+                                            (invert-unit-series s)))))
+
+The procedure doesn't go into an infinite loop, because of delayed evaluation. 
+
+------------------------------------------------------------------------------
+
+Problem 4:
+
+The idea here is to first divide the denominator series with its leading coefficient,
+to make it a unit-series, which we can then invert and multiply by the scaled numerator. 
+
+(define (div-series s1 s2)
+  (let ((constant (stream-first s2)))
+    (if (zero? constant)
+        'error
+        (mul-series (scale-series (/ 1 constant) s1)
+                    (invert-unit-series (scale-series (/ 1 constant)  s2))))))
+
+-----------------------------------------------------------------------------------------
+
+Problem 5:
+
+(define (integrate-series-tail s)
+  (define (index-map stream index)
+    (if (stream-empty? stream)
+        empty-stream
+        (stream-cons (/ (stream-first stream) index)
+                     (index-map (stream-rest stream) (inc index)))))
+  (index-map s 1))
+
+Here we integrate s2: 
+
+(show-series (integrate-series-tail s2) 10)
+1
+1
+1
+1
+1
+1
+1
+1
+1
+;Value: done
+
+------------------------------------------------------------------------------------
+
+Problem 6:
+
+Here's the correct approach: 
+
+(define cos-series
+  (stream-cons 1 (negate-series (integrate-series-tail sin-series))))
+
+(define sin-series
+  (stream-cons 0 (integrate-series-tail cos-series)))
+
+
+this is MUCH nicer than the versions given below, for your curiosity. 
+
+The following are NOT correct ways of doing it! I effectively filtered the exp-series: 
+
+;; attempt 1
+(define (cycle n)
+  (cond ((= n 1) 2)
+        ((= n 2) 3)
+        ((= n 3) 4)
+        (else 1)))
+
+(define (cos-series-maker stream)
+  (define (stream-index-map proc n stream)
+    (if (stream-empty? stream)
+        empty-stream
+        (stream-cons (proc (stream-first stream) n) 
+                     (stream-index-map proc (cycle n) (stream-rest stream)))))
+  (define (maker x n)
+    (cond ((= n 1) x)
+          ((= n 3)(- x))
+          (else 0)))
+  (stream-index-map maker 1 stream))
+
+  
+
+;; attempt 2
+(define cos-series (cos-series-maker exp-series))
+
+;; this works as desired but it is not good enough in terms of abstraction.
+(define (sin-series-maker stream)
+  (define (stream-index-map proc n stream)
+    (if (stream-empty? stream)
+        empty-stream
+        (stream-cons (proc (stream-first stream) n) 
+                     (stream-index-map proc (cycle n) (stream-rest stream)))))
+  (define (maker x n)
+    (cond ((= n 2) x)
+          ((= n 4)(- x))
+          (else 0)))
+  (stream-index-map maker 1 stream))
+
+(define sin-series (sin-series-maker exp-series))
+
+-----------------The End --------------------------------------------------------

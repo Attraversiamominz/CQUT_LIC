@@ -1,0 +1,13 @@
+#lang racket
+;11619370216 youzhongmin HW2
+;1
+(define (fast-expt b n)
+  (cond ((= n 0) 1);condition 1
+        ((even? n) (square (fast-expt b (/ n 2))));condition 2
+        (else (* b (fast-expt b (- n 1))))));condition 3
+(define (square n)
+  (* n n))
+(define (nmult n)
+  (cond ((= n 0) 0)
+        ((odd? n) (+ 1 (nmult (- n 1))))
+        (else (+ 1 (nmult (/ n 2))))))

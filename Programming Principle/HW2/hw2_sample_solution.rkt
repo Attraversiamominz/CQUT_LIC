@@ -1,0 +1,129 @@
+#lang racket
+; CS220 Fall, 2018
+; Homework 2 Sample Solution
+
+
+;==============================================================
+;Problem 1. 
+;(9 points total, a - 3 points, b - 3 points, c- 3 points)
+;==============================================================
+
+;a: write procedure nmult(n)
+
+; (No Comment: deduce -1 . Any comment is fine.(OK))
+(define (nmult n)
+  (cond ((= n 0) 0)
+        ((even? n) (+ (nmult (/ n 2)) 1))
+        (else (+ (nmult (- n 1)) 1))))
+
+;b: 
+;  Result of "(nmult n)" is the summation of 
+;  (number of bits + number of 1's - 1) when you represent n in binary number.
+;  For example, when n is 5 (=101), the answer is (3 + 2 -1) =4
+
+
+;c. nmult(n) =o            if n=0
+;            =nmult(n/2)+1 if n is even
+;            =nmult(n-1)+1 if n is odd
+
+; So, nmult(n) <= 2 + nmult(floor(n/2))
+;              <= 2(k-1) + nmult(1) 
+;                       where 2^(k-1) <= n < 2^k
+
+; when 2^(k-1) <= n < 2^k , nmult(n) <= (2k-1)
+;   k-1 <= log n < k  implies log n < k <= (1+log n) 
+;   whic implies  2k - 1 <= (1 + 2 log n) <= (3 log n)  when n>1 
+; Q.E.D. 
+
+
+;====================================
+;Problem 2
+;(3 points)
+;====================================
+
+;let f(n)  be the number of operation to compute power of n
+; by Louis Reasoner. Since he calls (fast-expt b (/ n 2)) twice instead of once,
+;then  f(n) = 2*f(n/2) + 1
+
+;let   n = 2^k 
+;f(2^k) = 2 * f(2^(k-1)) + 1
+;       = 2^(2 * f(2^(k-2))+1
+;       = ...
+;       = (2^k + 2^(k-1) + ........ + 1) * e(1)
+;       = 2^(k+1) - 1
+;       = 2n - 1 
+
+;That is,  time complexity绰 O(n)
+
+
+
+;=========================
+;Prolbem 3.;  Exercise 1.31(a)
+;(6 points)
+;=========================
+
+;Problem 31 (a)
+; - Recursive order
+
+;(2 points)
+; DON'T forget the comments
+; AND test case
+(define (product term a next b)
+  (if (> a b)
+      1
+      (* (term a)
+         (product term (next a) next b))))
+
+
+;(2 points)
+; DON'T forget the comments
+; AND test case
+(define (factorial b)
+  (define (fact-term x) x)
+  (define (fact-next x) (+ x 1))
+  (product fact-term 1 fact-next b))
+
+
+;(2 points)
+; DON'T forget the comments
+; AND test case
+(define (pi-product n)
+  (define (pi-term x) (/ (* x (+ x 2)) (+ x 1) (+ x 1)))
+  (define (pi-next x) (+ x 2))
+  (* 4 (product pi-term 2 pi-next n)))
+
+
+
+;================================
+;Problem 4. Exercise 1.32(b)
+;(3 point total)
+;=================================
+
+; Problem 1.32(b) solution
+; DON'T forget the comments
+; AND test case
+
+; - Iterative order
+(define (accumulate combiner null-value term a next b)
+  (define (accumulate-iter a result)
+    (if (> a b)
+        result
+        (accumulate-iter (next a) (combiner result (term a)))))
+  (accumulate-iter a null-value))
+
+
+
+
+;==================================
+;Problem 5.  Ex 1.41 
+; (3 points)
+;==================================
+
+; DON'T Forget the comments and test data in advance
+; 
+
+(define (double func)
+  (lambda (x) (func (func x))))
+(define (inc x) (+ x 1))
+
+(((double (double double)) inc) 5)

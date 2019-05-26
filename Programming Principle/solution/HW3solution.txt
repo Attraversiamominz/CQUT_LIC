@@ -1,0 +1,230 @@
+;=================================================
+; 2018 Fall HW No. 3 sample solution
+===========================================
+
+; If the comment are not rigth, deduct 1point for each problem
+; If no test case, deduct 1point for each problem
+; If both are missing, still deduct 1 point anyway for each problem
+;
+
+
+;==================================================
+; Problem 1. Ex 2.27 [4 points]
+;==================================================
+
+; version 1
+; DON'T Forget the comments and test data in advance
+; 
+(define (deep-reverse a)
+  (cond ((null? a) a)
+        ((pair? (car a))
+         (append (deep-reverse (cdr a))
+                 (list (deep-reverse (car a)))))
+        (else (append (deep-reverse (cdr a)) (list (car a))))))
+
+; version 2
+; DON'T Forget the comments and test data in advance
+; 
+(define (deep-reverse a)
+  (if (null? a)
+      a
+      (if (pair? (car a))
+          (append (deep-reverse (cdr a))
+                  (list (deep-reverse (car a))))
+          (append (deep-reverse (cdr a)) (list (car a))))))
+
+
+;==================================
+;  Problem 2. Ex 2.29 [12 points]
+;===================================
+
+(define mobile
+  '((2 2) (1 ((1 3) (3 1))))) ; test data
+
+(define (make-mobile left right)  ; constructor
+  (list left right))
+(define (make-branch length structure)
+  (list length structure))
+
+;
+; a) selectors [3 point]
+;================================================
+
+; DON'T Forget the comments and test data in advance
+; 
+(define (left-branch mobile)
+  (car mobile))
+; DON'T Forget the comments and test data in advance
+; 
+(define (right-branch mobile)
+  (cadr mobile))
+; DON'T Forget the comments and test data in advance
+; 
+(define (branch-length branch)
+  (car branch))
+; DON'T Forget the comments and test data in advance
+; 
+(define (branch-structure branch)
+  (cadr branch))
+
+;
+; b) total weight[3 point]
+;====================================================
+
+; DON'T Forget the comments and test data in advance
+; 
+(define (total-weight mobile)
+  (cond ((null? mobile) 0) ; empty mobile
+        ((pair? mobile) (+ (weigh (left-branch mobile))
+                          (weigh (right-branch mobile))))
+        (else (error "Unknown type"))))
+
+; DON'T Forget the comments and test data in advance
+; 
+(define (weigh branch)
+  (if (null? branch)
+      0                ; empty branch? 
+      (let ((struct (branch-structure branch)))
+        (if (pair? struct)
+            (total-weight struct) ; branch is a mobile
+            struct))))            ; brach is a simple weight
+
+;
+; c) balanced[3 points]
+;====================================================
+
+; DON'T Forget the comments and test data in advance
+;
+(define (balanced mobile)
+  (define (torque branch)
+    (* (branch-length branch) (weigh branch)))
+  (let ((left (left-branch mobile))
+        (right (right-branch mobile)))
+    (and (= (torque left) (torque right))
+         (if (pair? (branch-structure left))
+             (balanced (branch-structure left)) ; check balance of left mobile
+             #t)   ;if not mobile, already balanced
+         (if (pair? (branch-structure right))
+             (balanced (branch-structure right)); check balance of right mobile
+             #t))))   ;if not mobile, already balanced
+
+;
+; d) what should be changed [3 point]
+;====================================================
+
+(define (make-mobile left right)
+  (cons left right))
+(define (make-branch length structure)
+  (cons length structure))
+
+; We need to change two selectors
+; should change  selector 
+
+(define (right-branch mobile)
+  (cdr mobile))
+
+(define (branch-structure branch)
+  (cdr branch))         
+
+;=======================================
+; Problem 3    Ex 2-34 [3 point]
+;==========================================
+
+; You need to fill in the blanks.
+;
+(define (horner-eval x coefficient-sequence)
+  (accumulate (lambda(this-coeff higher-terms)
+
+                (+ this-coeff (* x higher-terms)))
+                ----------------------------------------
+              0
+              coefficient-sequence))
+
+;======================================
+; Problem 4   Ex 2-36 [3 point]
+========================================
+;
+; You need to fill in the blanks.
+;
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+      nil
+      (cons (accumulate op init (map car seqs))
+                                --------------
+            (accumulate-n op init (map cdr seqs)))))
+                                  ---------------
+
+
+; For test purpose. You dont't need to write on report
+(define nil '())
+(define (accumulate op init seq)
+  (if (null? seq)
+      init
+      (op (car seq)
+          (accumulate op init (cdr seq)))))
+
+
+;=============================================
+; Problem 5.  Exercise 2.38 [4 points]
+;==========================================
+
+(define fold-right accumulate)
+
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter (op result (car rest))
+              (cdr rest))))
+  (iter initial sequence))
+
+; Only check the interactive window.
+; If it shows the following reseults in the display
+; it is ok. 
+
+; answers
+;
+> (fold-right / 1 (list 1 2 3))
+3/2   (why?)<= (1 /( 2 / 3))= 1 / 2 * 3
+
+;
+> (fold-left / 1 (list 1 2 3))
+1/6   (why?) <= (1 / 2) / 3) = 1 / 2 / 3
+
+;
+> (fold-right list nil (list 1 2 3))
+(1 (2 (3 ())))
+
+;
+> (fold-left list nil (list 1 2 3))
+(((() 1) 2) 3)
+;
+
+
+; Check the answer in the report paper. [1 point]
+
+; Must satisfy  "associativity"
+; That is, 
+; a op b op c = (a op (b op c)) = ((a op b) op c)
+; ; in Korean (결합법칙을 만족하여야 한다.)
+
+
+;=============================================
+; Problem 6.  In the homework[4 points]
+;==========================================
+
+; DON'T Forget the comments and test data in advance
+;
+(define (subsequence fun alist)
+     (if (empty? alist)
+          empty
+          (cons (fun alist)
+                (subsequence fun (cdr alist)))))
+
+;; empty? can be null?
+;; emtpy can be '()
+;; cdr can be rest
+;
+
+
+

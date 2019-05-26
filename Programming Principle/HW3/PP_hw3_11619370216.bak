@@ -1,0 +1,57 @@
+#lang racket
+;11619370216 游忠敏
+;================================================================
+;[4 points] Exercise 2.27 of the text book.
+;2.18 reverse
+(define (reverse lst)
+  (if (null? lst)
+      empty
+      (append (reverse (cdr lst))
+              (list (car lst)))))
+
+(define x (list (list 1 2) (list 3 4)))
+
+(define (deep-reverse x)
+  (cond ((null? x) empty);if the tree is empty, append empty.
+        ((pair? x);if x is not a leaf.
+         (append (deep-reverse (cdr x))
+                 (list (deep-reverse (car x)))))
+        (else x)));if x is a leaf.
+
+;================================================================
+;[12 points] Exercise 2.29 of the text book.
+(define (make-mobile left right)
+  (list left right))
+
+(define (make-branch length structure)
+  (list length structure))
+
+;a
+(define (left-branch mobile)
+  (car mobile))
+
+(define (right-branch mobile)
+  (car (cdr mobile)))
+
+(define (branch-length branch)
+  (car branch))
+
+(define (branch-structure branch)
+  (car (cdr branch)))
+
+;b
+(define (mobile? structure)
+  (list? structure))
+
+(define (branch-weight branch)
+  (let ((structure (branch-structure branch)))
+    (if (mobile? structure)
+        (total-weight structure)
+        structure)))
+
+(define (total-weight mobile)
+  (let ((left (left-branch mobile))
+        (right (right-branch mobile)))
+    (+ (branch-weight left)
+       (branch-weight right))))
+
