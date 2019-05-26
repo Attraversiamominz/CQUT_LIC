@@ -1,0 +1,54 @@
+#lang plai
+;===== Homework1_11619370216 ======
+; 1
+; area-square: number number -> number
+; to consumes an integer number denoting the length of two sides and produces the area of the square.
+(define (area-square length width)
+  (* length width))
+;(test (area-square 3 4) 12)
+
+; 2
+; volume-cuboid: number number number -> number
+; to consumes three integer numbers denoting lengths of three sides and produces the volume of the cuboid. '', which consumes three integer numbers denoting lengths of three sides and produces the volume of the cuboid.
+(define (volume-cuboid length width height)
+  (* length width height))
+;(test (volume-cuboid 3 4 5) 60)
+
+; 3
+; is-multiple-of?: number number -> boolean
+(define (is-multiple-of? fir sec)
+  (= 0 (remainder fir sec)))
+;(test (is-multiple-of? 10 3) #f)
+
+; 4
+; factorial: number -> number
+; to consumes an integer number and returns the result of the factorial operation.
+(define (factorial n)
+  (if (= n 1)
+      1
+      (* n (factorial (- n 1)))))
+;(test (factorial 5) 120)
+
+; 5
+; fibonacci: number -> number
+; to consumes an integer number ''n'' and returns the ''n''-th fibonacci number.
+(define (fibonacci n)
+  (cond ((= 0 n) 0)
+        ((= 1 n) 1)
+        (else (+ (fibonacci (- n 1)) (fibonacci (- n 2))))))
+;(test (fibonacci 3) 2)
+
+; 6
+; course: string -> string
+; Construct a type contains some courses with their attributes.
+(define-type course
+  [CS320 (quiz number?)
+         (homework number?)]
+  [CS311 (homework number?)]
+  [CS330 (projects number?)
+         (homework number?)])
+
+; 7
+; total-assignments: string -> number
+; to consumes a single course and produces the total number of quizzes, homework, and projects for the given course.
+(define-type total-assignments)
